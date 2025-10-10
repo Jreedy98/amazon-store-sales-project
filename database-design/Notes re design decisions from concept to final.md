@@ -4,16 +4,19 @@ This document outlines the key decisions made during the design of the database 
 
 1. Moving from initial_concept to erd_2nf: 
 
-a. Decision: Using Surrogate Keys rather natural keys
+a. Decision: Using Surrogate Keys rather than natural keys
 
-Initial thought: The source data provides natural keys like product_id and review_id that could potentially be used as primary keys (PKs).
+Initial thought: The source data provides potential natural keys like product_id and review_id that could be candidates for being a primary keys (PKs).
 
 Final decision: All primary keys will be system generated surrogate keys (e.g. product_sk, user_sk).
 
 Reasoning: Natural keys from an external dataset are outside of my control and it is unclear who has control of these natural keys from the dataset (e.g. is the product_id assigned through amazon and is it guaranteed that this ID wont change?). Relying on these natural keys would make my database fragile. Therefore, I decided to use a surrogate key, as it is guaranteed to be unique, stable, and permanent.
 
 
-b. Decision: Remove ambiguity from natural key names
+b. Supporting the decision to use surrogate keys: further querying of the previously indetified potential natural keys revealed that these attributes were not unique (e.g. product_id did not relate to one individual product but instead a listing for a product, which there were sometimes a maximum of 2 listings for across the dataset). This further supported the use of surrogate keys to act as the unique PK for the tables. 
+
+
+c. Decision: Remove ambiguity from 'column id' names
 
 Initial thought: The original column names like product_id could be confusing once surrogate keys are introduced.
 
@@ -21,9 +24,10 @@ Final decision: A new naming convention was adopted to remove all ambiguity.
 
 Surrogate keys (PKs): Will use "_sk" within their name (e.g. product_sk, listing_sk).
 
-Natural keys: The original identifiers from the source data will be renamed with "amazon_" ahead of their name to clearly indiciate their origin (e.g., amazon_product_id, amazon_review_id).
+'column id' columns: The original identifiers from the source data will be renamed with "amazon_" ahead of their name to clearly indiciate their origin (e.g., amazon_product_id, amazon_review_id).
 
 Reasoning: This convention makes it immediately clear what the function of each key is. product_sk is for internal database joins, while amazon_product_id is for tracing a record back to the original CSV file.
+
 
 
 2. Moving from erd_2nf to erd_final:
