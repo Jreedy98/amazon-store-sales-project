@@ -43,6 +43,15 @@ SELECT *
 FROM product_rating
 WHERE rating < 0 OR rating_count <= 0;
 
+-- Checking if there are any instances where a product rating or rating_count is NULL
+-- This revealed that there were two records which had a rating_count of NULL
+-- These records did have a rating, which would suggest this was an error in the recording process
+-- as the rating_count must have been known to calculate the average rating, and this was omitted from the two records in error
+-- Decision: rating_count will be left as NULL for these records and they will be filtered out in VIEWS that use rating_count for querying 
+SELECT *
+FROM product_rating
+WHERE rating_count IS NULL OR rating IS NULL;
+
 -- Confirming that there are no instances of a product_name being NULL
 SELECT product_sk, product_name
 FROM products
