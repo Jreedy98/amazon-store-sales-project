@@ -38,9 +38,10 @@ GROUP BY price_points
 ORDER BY price_points ASC;
 
 -- Creating a VIEW to compare which category of producs had the most user engagement
+DROP VIEW category_engagement_analysis;
 CREATE VIEW category_engagement_analysis AS
 SELECT
-	c.category,
+	SPLIT_PART(c.category, '|', -1) AS category, -- shortening the category types to make it more readable in the visualisations
 	COUNT(r.review_sk) AS num_written_reviews,
 	SUM(pr.rating_count) AS total_rating_votes
 FROM reviews AS r
@@ -58,6 +59,7 @@ LIMIT 10;
 
 
 -- Creating a VIEW to compare each category's discount to the average discount in that price bracket
+DROP VIEW discount_strategy_analysis;
 CREATE VIEW discount_strategy_analysis AS
 WITH price_point AS(
 	SELECT
@@ -86,7 +88,7 @@ avg_discounts AS(
 		GROUP BY category, price_bracket
 )
 SELECT
-	category,
+	SPLIT_PART(category, '|', -1) AS category, -- shortening the category types to make it more readable in the visualisations
 	price_bracket,
 	ROUND(AVG(cat_avg_discount) OVER (PARTITION BY price_bracket), 0) AS avg_discount_for_bracket,
 	ROUND(cat_avg_discount, 0) AS category_avg_discount_for_bracket
