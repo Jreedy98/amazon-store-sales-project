@@ -95,4 +95,20 @@ SELECT
 FROM avg_discounts
 ORDER BY price_bracket, category;
 
+-- Creating a VIEW of total metrics for power bi report 
+CREATE VIEW listing_total_metrics AS
+SELECT
+	COUNT(DISTINCT r.listing_sk) AS total_listings,
+	COUNT(DISTINCT r.review_sk) AS total_reviews,
+	COUNT(DISTINCT c.category_sk) AS total_categories
+FROM reviews AS r
+LEFT JOIN product_listing AS pl
+USING (listing_sk)
+LEFT JOIN products AS p
+ON pl.product_sk = p.product_sk
+LEFT JOIN product_category AS c
+ON p.category_sk = c.category_sk;
+
+
+
 
