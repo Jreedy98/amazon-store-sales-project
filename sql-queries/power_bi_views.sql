@@ -15,6 +15,7 @@ CROSS JOIN rating_calcs AS rc
 WHERE rating_count IS NOT NULL;
 
 -- Creating a VIEW to compare relationship between price point and rating metrics
+DROP VIEW price_point_rating_analysis;
 CREATE VIEW price_point_rating_analysis AS
 SELECT
 	CASE
@@ -25,8 +26,9 @@ SELECT
 		WHEN pl.discounted_price BETWEEN 80.01 AND 100 THEN '£80.01 - £100.00'
 		WHEN pl.discounted_price > 100 THEN 'In excess of £100.00'
 	END AS price_points,
-	ROUND(AVG(war.weighted_average_rating), 1) AS avg_weighted_rating,
-	SUM(pr.rating_count) AS total_votes
+	ROUND(AVG(war.weighted_average_rating), 2) AS avg_weighted_rating,
+	SUM(pr.rating_count) AS total_votes,
+	ROUND(AVG(pr.rating), 2) AS avg_rating
 FROM product_listing AS pl
 LEFT JOIN products AS p
 USING (product_sk)
@@ -88,26 +90,39 @@ avg_discounts AS(
 		GROUP BY category, price_bracket
 )
 SELECT
+	category_avg_discount_for_bracket - avg_discount_for_bracket AS category_price_discount_dif,
 	SPLIT_PART(category, '|', -1) AS category, -- shortening the category types to make it more readable in the visualisations
 	price_bracket,
-	ROUND(AVG(cat_avg_discount) OVER (PARTITION BY price_bracket), 0) AS avg_discount_for_bracket,
-	ROUND(cat_avg_discount, 0) AS category_avg_discount_for_bracket
-FROM avg_discounts
+	category_avg_discount_for_bracket,
+	avg_discount_for_bracket
+FROM (
+	SELECT
+		category, 
+		price_bracket,
+		ROUND(AVG(cat_avg_discount) OVER (PARTITION BY price_bracket), 0) AS avg_discount_for_bracket,
+		ROUND(cat_avg_discount, 0) AS category_avg_discount_for_bracket
+	FROM avg_discounts) AS sub
+WHERE ABS(category_avg_discount_for_bracket - avg_discount_for_bracket) > 10 
+OR ABS(category_avg_discount_for_bracket - avg_discount_for_bracket) < -10
 ORDER BY price_bracket, category;
 
 -- Creating a VIEW of total metrics for power bi report 
+DROP VIEW listing_total_metrics;
 CREATE VIEW listing_total_metrics AS
 SELECT
 	COUNT(DISTINCT r.listing_sk) AS total_listings,
 	COUNT(DISTINCT r.review_sk) AS total_reviews,
-	COUNT(DISTINCT c.category_sk) AS total_categories
+	COUNT(DISTINCT c.category_sk) AS total_categories,
+	SUM(pr.rating_count) AS sum_ratings
 FROM reviews AS r
 LEFT JOIN product_listing AS pl
 USING (listing_sk)
 LEFT JOIN products AS p
 ON pl.product_sk = p.product_sk
 LEFT JOIN product_category AS c
-ON p.category_sk = c.category_sk;
+ON p.category_sk = c.category_sk
+LEFT JOIN product_rating AS pr
+ON p.rating_sk = pr.rating_sk;
 
 
 
