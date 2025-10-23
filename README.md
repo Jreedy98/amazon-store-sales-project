@@ -96,7 +96,7 @@ I conducted data quality checks to identify logical errors and inconsistencies i
     **Thought process:** Assigning an arbitrary value (such as 0) would compromise data integrity. The exclusion of two rows from a 1,466 row dataset would have a negligible impact on overall analysis.
 
 
-[View all validation queries:](sql-queries/data_validation_queries.sql)
+[View all validation queries](sql-queries/data_validation_queries.sql)
 
 ## 5. Analysis & Insights
 
@@ -178,7 +178,7 @@ This prevents products with few votes but perfect ratings from ranking above wel
 - CASE statements to create price brackets; and
 - Aggregate functions with conditions. 
 
-[View all analysis queries:](sql-queries/power_bi_views.sql)
+[View all analysis queries](sql-queries/power_bi_views.sql)
 
 ## 6. Limitations & Future Enhancements
 
